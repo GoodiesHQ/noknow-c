@@ -1,8 +1,4 @@
-#include <libec.h>
 #include <noknow.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
 
 /* Example NoKnow Usage */
 
