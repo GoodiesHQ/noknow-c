@@ -40,9 +40,9 @@ The fundamental problem on which this protocol is based is the Elliptic Curve Di
 
 <!--
 \\
-\texttt{Very Easy: } \text{Given a point, } G \text{, and a scalar, } n \text{, find } P \text { such that } P = nG
+\texttt{Very Easy: } \text{Given a point, } G \text{, and a scalar, } k \text{, find } P \text { such that } P = k \cdotp G
 \\
-\texttt{Very Hard: } \text{Given a point, } P \text{, and a scalar, } n \text{, find } G \text { such that } P = nG
+\texttt{Very Hard: } \text{Given points, } P \text{ and } Q \text{, find } k \text { such that } P = k \cdotp G
 \\
 \textbf{ZK Parameters:}
 \\ \text{Elliptic Curve (ex: } y^2 = x^3 + ax + b \text{ although other forms are allowed):}
@@ -54,17 +54,17 @@ The fundamental problem on which this protocol is based is the Elliptic Curve Di
 \\salt \hspace{37} \text{A random salt used for the hash function, unique to each user}
 -->
 
-<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbg_white%20%5Csmall%20%5C%5C%20%5Ctexttt%7BVery%20Easy%3A%20%7D%20%5Ctext%7BGiven%20a%20point%2C%20%7D%20G%20%5Ctext%7B%2C%20and%20a%20scalar%2C%20%7D%20n%20%5Ctext%7B%2C%20find%20%7D%20P%20%5Ctext%20%7B%20such%20that%20%7D%20P%20%3D%20nG%20%5C%5C%20%5Ctexttt%7BVery%20Hard%3A%20%7D%20%5Ctext%7BGiven%20a%20point%2C%20%7D%20P%20%5Ctext%7B%2C%20and%20a%20scalar%2C%20%7D%20n%20%5Ctext%7B%2C%20find%20%7D%20G%20%5Ctext%20%7B%20such%20that%20%7D%20P%20%3D%20nG%20%5C%5C%20%5Ctextbf%7BZK%20Parameters%3A%7D%20%5C%5C%20%5Ctext%7BElliptic%20Curve%20%28ex%3A%20%7D%20y%5E2%20%3D%20x%5E3%20&plus;%20ax%20&plus;%20b%20%5Ctext%7B%20although%20other%20forms%20are%20allowed%29%3A%7D%20%5C%5C%20%5Chspace*%7B25%7D%20a%20%5Chspace*%7B25%7D%20%5Ctext%7Ba%20parameter%20for%20curve%2C%20%7D%20C%20%5C%5C%20%5Chspace*%7B25%7D%20b%20%5Chspace*%7B25%7D%20%5Ctext%7Bb%20parameter%20for%20curve%2C%20%7D%20C%20%5C%5C%20%5Chspace*%7B25%7D%20n%20%5Chspace*%7B25%7D%20%5Ctext%7Blarge%20prime%20number%20that%20determines%20the%20elliptic%20curve%20field%2C%20%7D%20F_n%20%5C%5C%20%5Chspace*%7B25%7D%20G%20%5Chspace*%7B22%7D%20%5Ctext%7BA%20generator%20point%20of%20the%20elliptic%20curve%20%7D%20G%20%5Cin%20C/F_n%20%5C%5C%20H%28data%29%20%5Chspace*%7B15%7D%20%5Ctext%7BHash%20function%20converted%20to%20integer%20representation%20%28ex%3A%20sha256%20%29%7D%20%5C%5Csalt%20%5Chspace%7B37%7D%20%5Ctext%7BA%20random%20salt%20used%20for%20the%20hash%20function%2C%20unique%20to%20each%20user%7D" />
+<img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdpi%7B150%7D%20%5Cbg_white%20%5Csmall%20%5C%5C%20%5Ctexttt%7BVery%20Easy%3A%20%7D%20%5Ctext%7BGiven%20a%20point%2C%20%7D%20G%20%5Ctext%7B%2C%20and%20a%20scalar%2C%20%7D%20k%20%5Ctext%7B%2C%20find%20%7D%20P%20%5Ctext%20%7B%20such%20that%20%7D%20P%20%3D%20k%20%5Ccdotp%20G%20%5C%5C%20%5Ctexttt%7BVery%20Hard%3A%20%7D%20%5Ctext%7BGiven%20points%2C%20%7D%20P%20%5Ctext%7B%20and%20%7D%20Q%20%5Ctext%7B%2C%20find%20%7D%20k%20%5Ctext%20%7B%20such%20that%20%7D%20P%20%3D%20k%20%5Ccdotp%20G%20%5C%5C%20%5Ctextbf%7BZK%20Parameters%3A%7D%20%5C%5C%20%5Ctext%7BElliptic%20Curve%20%28ex%3A%20%7D%20y%5E2%20%3D%20x%5E3%20&plus;%20ax%20&plus;%20b%20%5Ctext%7B%20although%20other%20forms%20are%20allowed%29%3A%7D%20%5C%5C%20%5Chspace*%7B25%7D%20a%20%5Chspace*%7B25%7D%20%5Ctext%7Ba%20parameter%20for%20curve%2C%20%7D%20C%20%5C%5C%20%5Chspace*%7B25%7D%20b%20%5Chspace*%7B25%7D%20%5Ctext%7Bb%20parameter%20for%20curve%2C%20%7D%20C%20%5C%5C%20%5Chspace*%7B25%7D%20n%20%5Chspace*%7B25%7D%20%5Ctext%7Blarge%20prime%20number%20that%20determines%20the%20elliptic%20curve%20field%2C%20%7D%20F_n%20%5C%5C%20%5Chspace*%7B25%7D%20G%20%5Chspace*%7B22%7D%20%5Ctext%7BA%20generator%20point%20of%20the%20elliptic%20curve%20%7D%20G%20%5Cin%20C/F_n%20%5C%5C%20H%28data%29%20%5Chspace*%7B15%7D%20%5Ctext%7BHash%20function%20converted%20to%20integer%20representation%20%28ex%3A%20sha256%20%29%7D%20%5C%5Csalt%20%5Chspace%7B37%7D%20%5Ctext%7BA%20random%20salt%20used%20for%20the%20hash%20function%2C%20unique%20to%20each%20user%7D" />
 
 With this principle in mind, knowing a private variable, `k`, is all that is required to produce the proper point. The first thing to do is generate a signature. This signature is produced by multiplying a known value, such as the hashed result of a password, by the elliptic curve's generator point:
 
 <!--
 \\ secret= "SuperSecretPassword"
 \\ k = H(secret || salt) \mod n
-\\ S = k * G
+\\ S = k \cdotp G
 -->
 
-<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbg_white%20%5Csmall%20%5C%5C%20secret%3D%20%22SuperSecretPassword%22%20%5C%5C%20k%20%3D%20H%28secret%20%7C%7C%20salt%29%20%5Cmod%20n%20%5C%5C%20S%20%3D%20k%20*%20G" />
+<img src="https://latex.codecogs.com/gif.latex?%5Cdpi%7B150%7D%20%5Cbg_white%20%5Csmall%20%5C%5C%20secret%3D%20%22SuperSecretPassword%22%20%5C%5C%20k%20%3D%20H%28secret%20%7C%7C%20salt%29%20%5Cmod%20n%20%5C%5C%20S%20%3D%20k%20%5Ccdotp%20G" />
 
 Now that we have produced this signature, `S`, which can be represented as an `(x, y)` pair, we can publish this signature publicly so that subsequent messages can be proven to have been produced by the same key that produced the signature, while ensuring that the signature itself reveals nothing about the data used to produce it.
 
