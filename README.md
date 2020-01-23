@@ -123,12 +123,80 @@ Since `t`, `salt`, and `P`/`S` should be handled as public pieces of information
 -->
 <img src="https://latex.codecogs.com/gif.latex?%5Cinline%20%5Cdpi%7B150%7D%20%5Cbg_white%20%5Csmall%20%5C%5C%5Chspace*%7B1%7D%20%5Ctext%7B%20P%3A%20%7D%20%5Chspace*%7B2%7D%20R%20%3D%3D%20M%20&plus;%20c%20%5Ccdot%20S%20%5C%5C%5Ctext%7BP1%3A%20%7D%20R%20%3D%3D%20%28m%20%5Ccdotp%20G%29&plus;%28c%20%5Ccdotp%20S%29%20%5Chspace*%7B113%7D%20%5Ctext%7BSubstitute%20%7D%20M%20%5C%5C%5Ctext%7BP2%3A%20%7D%20r%20%5Ccdot%20G%20%3D%3D%20%28m%20%5Ccdotp%20G%29&plus;%28c%20%5Ccdotp%20S%29%20%5Chspace*%7B100%7D%20%5Ctext%7BSubstitute%20%7D%20R%20%5C%5C%5Ctext%7BP3%3A%20%7D%20r%20%5Ccdot%20G%20%3D%3D%20%28%28r%20-%20ck%29%20%5Ccdot%20G%29%20&plus;%20%28c%20%5Ccdot%20S%29%20%5Chspace*%7B65%7D%20%5Ctext%7B%20Substitute%20%7D%20m%20%5C%5C%5Ctext%7BP4%3A%20%7D%20r%20%5Ccdot%20G%20%3D%3D%20%28%28r%20-%20ck%29%20%5Ccdot%20G%29%20&plus;%20%28c%20%5Ccdot%20%28k%20%5Ccdot%20G%29%29%20%5Chspace*%7B43%7D%20%5Ctext%7B%20Substitute%20%7D%20S%20%5C%5C%5Ctext%7BP5%3A%20%7D%20r%20%5Ccdot%20G%20%3D%3D%20%28%28r%20%5Ccdot%20G%29%20-%20%28%28ck%29%20%5Ccdot%20G%29%29%20&plus;%20%28%28ck%29%20%5Ccdot%20G%29%29%20%5Chspace*%7B19%7D%20%5Ctext%7BDistributive%20property%7D%20%5C%5C%5Ctext%7BP6%3A%20%7D%20r%20%5Ccdot%20G%20%3D%3D%20%28r%20%5Ccdot%20G%29%20-%20%28ck%20%5Ccdot%20G%29%20&plus;%20%28ck%20%5Ccdot%20G%29%20%5Chspace%7B45%7D%20%5Ctext%7BAssociative%20property%7D%20%5C%5C%5Chspace*%7B1%7D%20%5Ctext%7B%20C%3A%20%7D%20%5Chspace*%7B1%7D%20r%20%5Ccdot%20G%20%3D%3D%20r%20%5Ccdot%20G%20%5C%5C%20%5Ctextbf%7BQED%7D" />
 
-There we go! We have demonstrated that the point R can be demonstrated to be able to be derived from `c` and `M` without knowing the discriminators of `S` (`k`), `M` (`m`), or `R` (`r`). And since knowledge of all of these are required to create the proof, but their values are not transmitted during proving, the zero knowledge proof is complete.=---=9
+There we go! We have demonstrated that the point R can be demonstrated to be able to be derived from `c` and `M` without knowing the discriminators of `S` (`k`), `M` (`m`), or `R` (`r`). And since knowledge of all of these are required to create the proof, but their values are not transmitted during proving, the zero knowledge proof is complete.
 
 ## API
 
 ## Install
 
+`NoKnow` currently depends on `libecc` as the chosen elliptic curve math library as it allows for a rather simple implementation of the protocol, and fully supports arbitrary numbers, finite fields, and elliptic curves. Other libraries may be more performant, smaller, or easier to work with, but `libecc` was the most common one I ran into and seems to be relatively portable (compiling with GCC on Linux, Visual Studio on Windows, and GCC on MSYS). I may port it to `mbedtls` in the near future as it may prove to be superior in performance and development.
+
+#### Building
+Should be as simple as
+
+    make
+
 ## Example Usage
 
+    #include <libec.h>
+    #include <noknow.h>
+    #include <ctype.h>
+    #include <stdbool.h>
+    #include <stdio.h>
+
+    #define REQUIRE(x) if(!(x)) { exit(-1); }
+
+    static inline bool user_input(FILE *stream, char *ptr, size_t max, size_t *size)
+    {
+      if(fgets(ptr, max, stream))
+      {
+        if(size != NULL)
+        {
+          *size = strlen(ptr);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    static const char *hash_name = "SHA3_256";
+    static const char *curve_name = "SECP256R1";
+
+
+    int main() {
+      zk_params params;
+      zk_signature signature;
+      zk_proof proof;
+      const u8 data[] = "This can serve as a signed message.";
+
+      char password[256];
+      size_t password_len;
+
+      fputs("Create password: ", stdout);
+      REQUIRE(user_input(stdin, password, sizeof(password), &password_len));
+      if(zk_create_params(&params, curve_name, hash_name, NULL)) // initialize ZK cryptosystem
+      {
+        if(zk_create_signature(&params, &signature, (u8*)password, password_len)) // create signature from secret
+        {
+          memset(password, 0, password_len); // clear password
+          zk_display_aff(stdout, "Signature Point", &signature.p);
+
+          fputs("Verify password: ", stdout);
+          REQUIRE(user_input(stdin, password, sizeof(password), &password_len));
+          if(zk_create_proof(&params, &proof, (u8*)password, password_len, data, sizeof(data)))
+          {
+            memset(password, 0, password_len); // clear password
+            zk_display_nn(stdout, "Proof Digest", &proof.c);
+            zk_display_nn(stdout, "Proof Point ", &proof.m);
+            if(zk_verify_proof(&params, &signature, &proof, data, sizeof(data)))
+            {
+              return printf("Success!\n"), 0;
+            } else {
+              return printf("Failure!\n"), 1;
+            }
+          }
+        }
+      }
+      return -1;
+    }
 #### Example 1
