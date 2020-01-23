@@ -1,3 +1,0 @@
-[submodule "libecc"]
-	path = libecc
-	url = https://github.com/ANSSI-FR/libecc
