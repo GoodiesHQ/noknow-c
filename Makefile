@@ -26,17 +26,17 @@ release: CFLAGS := -O3 ${CFLAGS}
 release: build
 
 $(OBJDIR)/%.o: $(SRCDIR)/%$(SRCEXT)
-        $(CC) -c $< $(CFLAGS) -o $@
+	$(CC) -c $< $(CFLAGS) -o $@
 
 $(BINDIR)/$(PROJECT): $(OBJECTS)
-        $(CC) $^ $(LFLAGS) -o $@
+	$(CC) $^ $(LFLAGS) -o $@
 
 bins: $(BINDIR)/$(PROJECT)
 
 dirs:
-        @mkdir -p $(OBJDIR)
-        @mkdir -p $(BINDIR)
+	@mkdir -p $(OBJDIR)
+	@mkdir -p $(BINDIR)
 
 .PHONY: clean
 clean:
-        @rm -f $(OBJECTS)
+	@rm -f $(OBJECTS)
