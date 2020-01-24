@@ -3,7 +3,7 @@
 /*
  * Add buffer to hash context
  */
-static void hash_buf(const hash_mapping *hash, hash_context *ctx, const u8 * const buf, size_t len)
+static inline void hash_buf(const hash_mapping *hash, hash_context *ctx, const u8 * const buf, size_t len)
 {
   hash->hfunc_update(ctx, buf, (u32)len);
 }
@@ -12,21 +12,21 @@ static void hash_buf(const hash_mapping *hash, hash_context *ctx, const u8 * con
 /*
  * Export and hash affine point x,y coordinates
  */
-static void hash_aff(const hash_mapping *hash, hash_context *ctx, aff_pt_src_t pt)
+static inline void hash_aff(const hash_mapping *hash, hash_context *ctx, aff_pt_src_t pt)
 {
   const size_t len = BYTECEIL(pt->crv->a.ctx->p_bitlen);
   u8 buf[BYTECEIL(CURVES_MAX_P_BIT_LEN) << 1] = { 0 };
   fp_export_to_buf(buf, len, &pt->x);
   fp_export_to_buf(buf + len, len, &pt->y);
-  hash->hfunc_update(ctx, buf, len*2);
+  hash_buf(hash, ctx, buf, len*2);
   //prevent data leaks
-  memset(buf, 0, len);
+  memset(buf, 0, len*2);
 }
 
 /*
  * Convert prj_pt to aff_pt before hashing
  */
-static void hash_prj(const hash_mapping *hash, hash_context *ctx, prj_pt_src_t pt)
+static inline void hash_prj(const hash_mapping *hash, hash_context *ctx, prj_pt_src_t pt)
 {
   // convert to affine point prior to hashing as this will ensure portability
   aff_pt a;
