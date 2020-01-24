@@ -63,3 +63,5 @@ bool zk_create_params(zk_params *zkparams, const char * const curve_name, const 
 bool zk_create_signature(const zk_params * const zkparams, zk_signature *signature, const u8 *secret, const u32 secret_len);
 bool zk_create_proof(const zk_params * const zkparams, zk_proof *proof, const u8 *secret, const u32 secret_len, const u8 *data, const u32 data_len);
 bool zk_verify_proof(const zk_params * const zkparams, zk_signature * const signature, const zk_proof *proof, const u8 *data, const u32 data_len);
+
+#endif//NOKNOW_H
