@@ -102,10 +102,8 @@ void zk_list_curves(FILE *stream) {
 bool zk_is_supported_curve_name(const char *curve_name, const mbedtls_ecp_curve_info ** curve_info) {
   const mbedtls_ecp_curve_info *info;
   info = mbedtls_ecp_curve_info_from_name(curve_name);
-  if(info != NULL)
-  {
-    if(curve_info != NULL)
-    {
+  if(info != NULL) {
+    if(curve_info != NULL) {
       *curve_info = info;
     }
     return true;
@@ -114,14 +112,11 @@ bool zk_is_supported_curve_name(const char *curve_name, const mbedtls_ecp_curve_
 }
 
 
-bool zk_is_supported_hash_name(const char *hash_name, const mbedtls_md_info_t **hash_info)
-{
+bool zk_is_supported_hash_name(const char *hash_name, const mbedtls_md_info_t **hash_info) {
   const mbedtls_md_info_t *info;
   info = mbedtls_md_info_from_string(hash_name);
-  if(info != NULL)
-  {
-    if(hash_info != NULL)
-    {
+  if(info != NULL) {
+    if(hash_info != NULL) {
       *hash_info = info;
     }
     return true;
@@ -133,12 +128,10 @@ bool zk_is_supported_hash_name(const char *hash_name, const mbedtls_md_info_t **
 /*
  * Constant-time buffer comparison algorithm
  */
-bool zk_are_equal(const uint8_t * const buf1, const uint8_t * const buf2, size_t buflen)
-{
+bool zk_are_equal(const uint8_t * const buf1, const uint8_t * const buf2, size_t buflen) {
   uint8_t check = 0;
   size_t i;
-  for(i = 0; i < buflen; ++i)
-  {
+  for(i = 0; i < buflen; ++i) {
     check |= buf1[i] ^ buf2[i];
   }
   return check == 0;
