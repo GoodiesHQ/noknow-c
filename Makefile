@@ -2,13 +2,13 @@ PROJECT:=noknow
 STDVER:=c99
 SRCDIR:=src
 SRCEXT:=.c
-INCDIR:=inc libecc/src
+INCDIR:=inc mbedtls/include
 INCEXT:=.h
 OBJDIR:=${SRCDIR}/obj
-LIBDIR:=lib libecc/build
+LIBDIR:=lib mbedtls/library
 BINDIR:=bin
 CC=gcc
-LIBS=ec arith sign
+LIBS=mbedtls mbedcrypto mbedx509
 CFLAGS := -Wall -Wextra -Werror -pedantic --std=$(STDVER) $(foreach DIR, $(INCDIR), -I${DIR}) ${CFLAGS}
 LFLAGS := -static $(foreach DIR, $(LIBDIR), -L${DIR}) $(foreach LIB, $(LIBS), -l$(LIB))
 OBJECTS=$(patsubst $(SRCDIR)/%$(SRCEXT),$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*$(SRCEXT)))

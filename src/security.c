@@ -1,10 +1,6 @@
-#include <stdlib.h>
-
-#include <libec.h>
-#include <hash/hash_algs.h>
-
+#include <noknow/debug.h>
 #include <noknow/utils/security.h>
-
+#include <string.h>
 
 #if (defined(__unix__) || defined(__APPLE__))
 #include <fcntl.h>
@@ -16,36 +12,30 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static int fimport(unsigned char *buf, u16 buflen, const char *path)
-{
-        u16 rem = buflen, copied = 0;
-        ssize_t ret;
-        int fd;
+static int fimport(unsigned char *buf, size_t buflen, const char *path) {
+  size_t rem = buflen, copied = 0;
+  ssize_t ret;
+  int fd;
 
-        fd = open(path, O_RDONLY);
-        if (fd == -1) {
-                printf("Unable to open input file %s\n", path);
-                return -1;
-        }
+  if ((fd = open(path, O_RDONLY)) == -1)
+  {
+    debugf("Unable to open input file %s\n", path);
+    return -1;
+  }
 
-        while (rem) {
-                ret = (int)read(fd, buf + copied, rem);
-                if (ret <= 0) {
-                        break;
-                } else {
-                        rem -= (u16)ret;
-                        copied += (u16)ret;
-                }
-        }
-
-        close(fd);
-
-        return (copied == buflen) ? 0 : -1;
+  while (rem) {
+    if ((ret = read(fd, buf + copied, rem)) <= 0) {
+      break;
+    }
+    rem -= ret;
+    copied += ret;
+  }
+  close(fd);
+  return (copied == buflen) ? 0 : -1;
 }
 
-int get_random(unsigned char *buf, u16 len)
-{
-        return fimport(buf, len, "/dev/urandom");
+int get_random(unsigned char *buf, size_t len) {
+  return fimport(buf, len, "/dev/urandom");
 }
 
 #elif defined(__WIN32__)
@@ -53,53 +43,86 @@ int get_random(unsigned char *buf, u16 len)
 #include <windows.h>
 #include <wincrypt.h>
 
-int get_random(unsigned char *buf, u16 len)
-{
-        HCRYPTPROV hCryptProv = 0;
+int get_random(unsigned char *buf, size_t len) {
+  int ret;
+  HCRYPTPROV hCryptProv = 0;
 
-        if (CryptAcquireContext(&hCryptProv, NULL, NULL,
-                                PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == FALSE) {
-                return -1;
-        }
+  if(CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == FALSE) {
+    return -1;
+  }
 
-        if (CryptGenRandom(hCryptProv, len, buf) == FALSE) {
-                CryptReleaseContext(hCryptProv, 0);
-                return -1;
-        }
-        CryptReleaseContext(hCryptProv, 0);
-        return 0;
+  ret = CryptGenRandom(hCryptProv, len, buf) == FALSE ? -1 : 0;
+  CryptReleaseContext(hCryptProv, 0);
+  return ret;
 }
-
 #else
 #error "Unsupported Platform System"
 #endif
 
-/*
- * Constant-time buffer comparison algorithm
- */
-bool zk_are_equal(const u8 * const buf1, const u8 * const buf2, u16 buflen)
-{
-  u8 check = 0;
-  u16 i;
-  for(i=0; i < buflen; ++i){
-    check |= (buf1[i] ^ buf2[i]);
+mbedtls_entropy_context *zk_entropy(void) {
+  static bool initialized = false;
+  static mbedtls_entropy_context ectx;
+  if(!initialized) {
+    mbedtls_entropy_init(&ectx);
+    initialized = true;
   }
-  return check == 0;
+  return &ectx;
 }
-
 
 /*
  * Determine if the name of the curve is supported
  */
-bool zk_is_supported_curve_name(const char *curve_name, ec_params *ecparams)
-{
-  const u32 curve_name_len = local_strnlen(curve_name, MAX_CURVE_NAME_LEN) + 1;
-  const ec_str_params *tmp = ec_get_curve_params_by_name((u8*)curve_name, curve_name_len);
-  if(tmp != NULL)
+void zk_list_hashes(FILE *stream) {
+  const mbedtls_md_type_t *mdt;
+  const mbedtls_md_info_t *info;
+  size_t i = 0;
+  mdt = (mbedtls_md_type_t*)mbedtls_md_list();
+  do{
+    info = mbedtls_md_info_from_type(mdt[i]);
+    fputs(mbedtls_md_get_name(info), stream);
+    fputc(' ', stream);
+  }while(mdt[++i] != MBEDTLS_MD_NONE);
+  fputc('\n', stream);
+}
+
+
+void zk_list_curves(FILE *stream) {
+  const mbedtls_ecp_curve_info *curves;
+  size_t i = 0;
+  curves = mbedtls_ecp_curve_list();
+  do {
+    fprintf(stream, "%s ", curves[i].name);
+    fputs(curves[i].name, stream);
+    fputc(' ', stream);
+  }while(curves[++i].grp_id != MBEDTLS_ECP_DP_NONE);
+  fputc('\n', stream);
+}
+
+
+bool zk_is_supported_curve_name(const char *curve_name, const mbedtls_ecp_curve_info ** curve_info) {
+  const mbedtls_ecp_curve_info *info;
+  info = mbedtls_ecp_curve_info_from_name(curve_name);
+  if(info != NULL)
   {
-    if(ecparams != NULL)
+    if(curve_info != NULL)
     {
-      import_params(ecparams, tmp);
+      *curve_info = info;
+    }
+    return true;
+  }
+  return false;
+}
+
+
+bool zk_is_supported_hash_name(const char *hash_name, const mbedtls_md_info_t **hash_info)
+{
+  const mbedtls_md_info_t *info;
+  info = mbedtls_md_info_from_string(hash_name);
+  if(info != NULL)
+  {
+    if(hash_info != NULL)
+    {
+      *hash_info = info;
     }
     return true;
   }
@@ -108,27 +131,15 @@ bool zk_is_supported_curve_name(const char *curve_name, ec_params *ecparams)
 
 
 /*
- * Determine if the name of the hash is supported
+ * Constant-time buffer comparison algorithm
  */
-bool zk_is_supported_hash_name(const char *hash_name, const hash_mapping **mapping)
+bool zk_are_equal(const uint8_t * const buf1, const uint8_t * const buf2, size_t buflen)
 {
-  const hash_mapping *tmp = get_hash_by_name(hash_name);
-  if(mapping != NULL)
+  uint8_t check = 0;
+  size_t i;
+  for(i = 0; i < buflen; ++i)
   {
-    *mapping = tmp;
+    check |= buf1[i] ^ buf2[i];
   }
-  return tmp != NULL;
-}
-
-/*
- * Determine if the type of the hash is supported
- */
-bool zk_is_supported_hash_type(const hash_alg_type hash_type, const hash_mapping **mapping)
-{
-  const hash_mapping *tmp = get_hash_by_type(hash_type);
-  if(mapping != NULL)
-  {
-    *mapping = tmp;
-  }
-  return tmp != NULL;
+  return check == 0;
 }

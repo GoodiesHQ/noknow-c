@@ -17,8 +17,12 @@
         do { if(DEBUG){ fprintf(stderr, "%s:%d:%s(): ",__FILE__, __LINE__, __func__);\
              fprintf(stderr, __VA_ARGS__); \
              fflush(stderr); }} while (0)
+#define ENTER debugf("Enter Function\n")
+#define LEAVE debugf("Leave Function\n")
 #else
 #define debugf(...)
+#define ENTER
+#define LEAVE
 #endif
 
 #if DEBUG_WAS_DEFINED == 0
